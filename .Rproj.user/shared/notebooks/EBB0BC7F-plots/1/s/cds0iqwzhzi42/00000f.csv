@@ -1,0 +1,6 @@
+"0","gaidspeedage <- read.xlsx(""data/data_22_10_2024.xlsx"", sheetIndex = 1)"
+"0","fvcwithage <- read.xlsx(""data/data_22_10_2024.xlsx"", sheetIndex = 2)"
+"0","gripwithage <- read.xlsx(""data/data_22_10_2024.xlsx"", sheetIndex = 3)"
+"0","chairrisewithage <- read.xlsx(""data/data_22_10_2024.xlsx"", sheetIndex = 4)"
+"0","selfratedhearing <- read.xlsx(""data/data_22_10_2024.xlsx"", sheetIndex = 5)"
+"0","selfratedeyesight <- read.xlsx(""data/data_22_10_2024.xlsx"", sheetIndex = 6)"

@@ -1,0 +1,290 @@
+---
+title: "Plot"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(xlsx)
+```
+
+## Plot
+```{r}
+gaidspeedovertime <- read.xlsx("data/data_21_10_2024.xlsx", sheetIndex = 1)
+gaidspeedwithage <- read.xlsx("data/data_21_10_2024.xlsx", sheetIndex = 2)
+```
+
+
+## gaidspeedovertime
+
+```{r}
+
+gaidspeedovertime |>
+  arrange(X_margin) |>
+  mutate(Wealth.quintile = factor(
+    Wealth.quintile,
+    levels =
+      c(
+        "highest wealth quintile",
+        "higher wealth quintile",
+        "middle wealth quintile",
+        "lower wealth quintile",
+        "lowest wealth quintile"
+      )
+  )) %>%
+  ggplot(aes(x = Years)) +
+    geom_line(aes(color = Wealth.quintile, 
+             y = X_margin), linewidth = 0.5) +
+  geom_point(aes(color = Wealth.quintile,
+                 y = gtspd_raw.mean), size = 1) +
+  geom_ribbon(aes(ymin = X_ci_lb, ymax = X_ci_ub, fill = Wealth.quintile),
+              alpha = 0.1) +
+  scale_fill_discrete(  
+      labels = c("higest", "higher", "middle", "lower", "lowest")) +
+  scale_color_discrete(  
+      labels = c("higest", "higher", "middle", "lower", "lowest")) +
+  theme_bw() +
+  labs(x = "Years",
+       y = "Gait Speed Over Time, m/s",
+       fill = "Wealth quintile",
+       color = "Wealth quintile") 
+
+# Save plot to file as svg
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"gaitspeed_time.png"),
+       height = 6, width = 8)
+  
+```
+
+```{r}
+
+gaidspeedwithage |>
+  arrange(X_margin) |>
+  mutate(Wealth.quintile = factor(
+    Wealth.quintile,
+    levels =
+      c(
+        "highest wealth quintile",
+        "higher wealth quintile",
+        "middle wealth quintile",
+        "lower wealth quintile",
+        "lowest wealth quintile"
+      )
+  )) %>%
+  ggplot(aes(x = Age,
+          )) +
+      geom_line(aes(color = Wealth.quintile, 
+             y = X_margin), linewidth = 0.5) +
+  geom_point(aes(color = Wealth.quintile,
+                 y = gtspd_raw.mean), size = 1) +
+  geom_ribbon(aes(ymin = X_ci_lb, ymax = X_ci_ub, fill = Wealth.quintile),
+              alpha = 0.1) +
+  scale_fill_discrete(  
+      labels = c("higest", "higher", "middle", "lower", "lowest")) +
+  scale_color_discrete(  
+      labels = c("higest", "higher", "middle", "lower", "lowest")) +
+  theme_bw() +
+  labs(x = "Age",
+       y = "Gait Speed Over Time, m/s",
+       fill = "Wealth quintile",
+       color = "Wealth quintile") 
+
+# Save plot to file as svg
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"gaitspeed_age.png"),
+       height = 6, width = 8)
+  
+```
+
+
+## Final plots
+```{r}
+gaidspeedage <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 1)
+fvcwithage <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 2)
+gripwithage <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 3)
+chairrisewithage <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 4)
+selfratedhearing <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 5)
+selfratedeyesight <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 6)
+```
+
+## Function
+```{r}
+plot <- function(data, xaxis, level_labels, labx, laby, filename){
+  
+  data |>
+  arrange(X_margin) |>
+  mutate(Wealth.quintile = factor(
+    Wealth.quintile,
+    levels =
+      level_labels
+  )) %>%
+  ggplot(aes(x = {{xaxis}},
+          )) +
+      geom_line(aes(color = Wealth.quintile, 
+             y = X_margin), linewidth = 0.5) +
+  # geom_point(aes(color = Wealth.quintile,
+  #                y = gtspd_raw.mean), size = 1) +
+  geom_ribbon(aes(ymin = X_ci_lb, ymax = X_ci_ub, fill = Wealth.quintile),
+              alpha = 0.1) +
+  scale_fill_discrete(  
+      labels = c("higest", "higher", "middle", "lower", "lowest")) +
+  scale_color_discrete(  
+      labels = c("higest", "higher", "middle", "lower", "lowest")) +
+  theme_bw() +
+  labs(x = labx,
+       y = laby,
+       fill = "Wealth quintile",
+       color = "Wealth quintile") 
+
+# Save plot to file as svg
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"), filename, ".png"),
+       height = 6, width = 8)
+  
+}
+```
+
+```{r}
+
+level_labels <- c(
+        "highest wealth quintile",
+        "higher wealth quintile",
+        "middle wealth quintile",
+        "lower wealth quintile",
+        "lowest wealth quintile"
+      )
+
+plot(data = gaidspeedage, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Gait speed, m/s", 
+     filename = "gaitspeedage")
+
+plot(data = fvcwithage, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "FVC (liters)", 
+     filename = "fvc")
+
+plot(data = gripwithage, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Grip with Age", 
+     filename = "grip")
+
+
+plot(data = chairrisewithage, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Chair rise with age", 
+     filename = "chairrise")
+
+plot(data = selfratedhearing, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Self-Rated hearing", 
+     filename = "hearing")
+plot(data = selfratedeyesight, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Self-Rated eyesight", 
+     filename = "eyesight")
+```
+
+
+# Removing > 90 
+
+```{r}
+
+plot90 <- function(data, xaxis, level_labels, labx, laby, filename){
+  
+  data |>
+  arrange(X_margin) |>
+  filter(Age < 90) |> 
+  mutate(Wealth.quintile = factor(
+    Wealth.quintile,
+    levels =
+      level_labels
+  )) %>%
+  ggplot(aes(x = {{xaxis}},
+          )) +
+      geom_line(aes(color = Wealth.quintile, 
+             y = X_margin), linewidth = 0.5) +
+  # geom_point(aes(color = Wealth.quintile,
+  #                y = gtspd_raw.mean), size = 1) +
+  geom_ribbon(aes(ymin = X_ci_lb, ymax = X_ci_ub, fill = Wealth.quintile),
+              alpha = 0.1) +
+  scale_fill_discrete(  
+      labels = c("higest", "higher", "middle", "lower", "lowest")) +
+  scale_color_discrete(  
+      labels = c("higest", "higher", "middle", "lower", "lowest")) +
+  theme_bw() +
+  labs(x = labx,
+       y = laby,
+       fill = "Wealth quintile",
+       color = "Wealth quintile") 
+
+# Save plot to file as svg
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"), filename, ".png"),
+       height = 6, width = 8)
+  
+}
+```
+
+```{r}
+
+level_labels <- c(
+        "highest wealth quintile",
+        "higher wealth quintile",
+        "middle wealth quintile",
+        "lower wealth quintile",
+        "lowest wealth quintile"
+      )
+
+plot90(data = gaidspeedage, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Gait speed, m/s", 
+     filename = "gaitspeedage90")
+
+plot90(data = fvcwithage, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "FVC (liters)", 
+     filename = "fvc90")
+
+plot90(data = gripwithage, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Grip with Age", 
+     filename = "grip90")
+
+
+plot90(data = chairrisewithage, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Chair rise with age", 
+     filename = "chairrise90")
+
+plot90(data = selfratedhearing, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Self-Rated hearing", 
+     filename = "hearing90")
+plot90(data = selfratedeyesight, 
+     xaxis = Age,
+     level_labels = level_labels,
+     labx = "Age",
+     laby = "Self-Rated eyesight", 
+     filename = "eyesight90")
+```
+
+

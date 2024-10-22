@@ -1,0 +1,2 @@
+"0","gaidspeedovertime <- read.xlsx(""data/data_21_10_2024.xlsx"", sheetIndex = 1)"
+"0","gaidspeedwithage <- read.xlsx(""data/data_21_10_2024.xlsx"", sheetIndex = 2)"

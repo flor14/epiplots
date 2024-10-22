@@ -1,0 +1,167 @@
+# install.packages("pacman")
+pacman::p_load(
+  tidyverse,
+  lubridate,
+  here,
+  conflicted,
+  # jtools,       # scaling and centering
+  lme4, # package for multilevel model functions
+  lmerTest, # package adds p-values to summary of MLM estimates
+  lspline,  # package for adding splines to model
+  # r2mlm, # package for estimating R^2 at different levels of the model
+  effects, # package for visualizing model results
+  # ordinal, # package for fitting a variety of mixed effects models for categorical outcomes
+  marginaleffects,
+  optimx,  # package for control of lmer function
+  broom.mixed,
+  patchwork  # package allows for simple side-by-side plotting of ggplot objects
+)
+conflicted::conflicts_prefer(lmerTest::lmer)
+conflicted::conflicts_prefer(dplyr::select)
+
+set.seed(2024) # for reproducible results
+
+# Make dummy data with known estimates, to test that the results are what we expect
+dummy_data <- tibble(
+  id = 1:1300,
+  score_2021_01_01 = rnorm(1300, mean = 5, sd = 3),
+  score_2021_02_01 = rnorm(1300, mean = 15, sd = 3), # First increment is 10
+  score_2021_03_01 = rnorm(1300, mean = 30, sd = 3) # next two increments are 15 each
+  ,score_2021_04_01 = rnorm(1300, mean = 45, sd = 3)
+)
+
+# Make it long
+dummy_long <- dummy_data |> 
+  pivot_longer(
+    cols = !id
+  ) |> 
+  mutate(name = ymd(str_remove(name, "score_")),
+         timepoint_months = time_length(name - ymd("2021-01-01"), "months"))
+
+# Add in a sex variable, with males having a mean score of +5 compared to females, but no difference in slope
+dummy_long_f <- dummy_long |> mutate(sex = "Female")
+dummy_long_m <- dummy_long |> mutate(sex = "Male",
+                                     value = value + rnorm(5200, mean = 5),
+                                     id = id + 1300
+                                    )
+dummy_long_tot <- bind_rows(dummy_long_f, dummy_long_m)
+
+# Visualize individual and overall raw trajectories
+dummy_long_tot |> 
+  ggplot(aes(x = timepoint_months, y = value))+
+  geom_line(aes(group = id), color = "grey") + 
+  geom_smooth(aes(group = 1), linewidth = 1, color = "red", se = FALSE, method = "gam", formula = y ~ s(x, bs = "cs", k=3)) +
+  facet_wrap(.~sex)+
+  theme_bw()
+
+# Make a null model, specifying a single knot at 1 month, for a total of two slopes
+mod0 <- lmer(value ~ 1 + lspline(timepoint_months, knots = c(1)) + (1+ lspline(timepoint_months, knots = c(1)) |id),
+             data = dummy_long_tot,
+             REML = FALSE # Use maximum likelihood
+             # , control = lmerControl(optimizer = "bobyqa")
+             # ,control = lmerControl(
+             #   optimizer ='optimx', optCtrl=list(method='L-BFGS-B', maxit=2e4))
+)
+
+# Visualize null model predictor effects
+plot(effects::predictorEffects(mod0));summary(mod0)
+
+# Update the null model to include covariates
+mod1 <- update(mod0, .~.
+               + sex
+)
+plot(effects::predictorEffects(mod1));summary(mod1)
+
+mod2 <- update(mod1, .~.
+               # Covariates interaction with time variable
+               + sex:lspline(timepoint_months, knots = c(1))
+)
+plot(effects::predictorEffects(mod2));summary(mod2)
+
+# Check model results to confirm that estimates are in expected range:
+broom.mixed::tidy(mod2,conf.int=TRUE,exponentiate=FALSE,effects="fixed") |>
+  mutate(p.value = case_when(p.value < 0.001 ~ "<0.001",
+                             .default = as.character(round(p.value,3))
+  )) |>
+  select(-c(std.error, statistic, df, effect)) |> relocate(p.value,.after = last_col())
+# EXPLANATION:
+# (Intercept) = females at baseline --> should be 5
+# sexMale = males at baseline --> they are +5 relative to females, so should also be 5
+# lspline(timepoint_months, knots = c(1))1 = estimate of first slope, should be 10
+# lspline(timepoint_months, knots = c(1))2 = estimate of second slope, should be 15
+# lspline(timepoint_months, knots = c(1))1:sexMale = difference in first slope of males relative to females, should be 0
+# lspline(timepoint_months, knots = c(1))1:sexMale = difference in second slope of males relative to females, should be 0
+
+
+
+# Plotting ####
+
+# Get raw summaries
+raw_summaries <- dummy_long_tot |> group_by(timepoint_months, sex) %>%
+  summarize(mean = mean(value),
+            sd = sd(value),
+            se = sd / sqrt(n()),
+            conf.low = mean - (1.96 * se),
+            conf.high = mean + (1.96 * se))
+
+## Make a function for the plots
+# Adapt this function however you want for your data structure / variables
+anshu_piecewise_raw_plot = function(df) {
+  df = df
+  layer0 = ggplot() +
+    # Plot the estimated mean scores
+    geom_line(data = df, aes(x = timepoint_months, y = estimate, color = sex)) +
+    # Plot the confidence intervals
+    geom_ribbon(data = df, aes(x = timepoint_months, y = estimate, 
+                               ymin = conf.low, ymax = conf.high, fill = sex), alpha = 0.3) +
+    # Plot the raw mean scores
+    geom_point(data = raw_summaries,
+               aes(
+                 x = timepoint_months,
+                 y = mean,
+                 color = sex,
+                 shape = sex
+               ), size = 3)+
+    geom_errorbar(data = raw_summaries,
+                  aes(
+                    x = timepoint_months,
+                    y = mean, 
+                    ymin = conf.low, 
+                    ymax = conf.high,
+                    color = sex
+                    ),
+                  width = 0.1)+
+    theme_bw() +
+    # Set the limits as needed for the axes (can zoom in without removing data points)
+    coord_cartesian(ylim = c(0, 50))+
+    labs(x = "Years (T0 = Jan 2021)",
+         y = "Estimated mean score")+
+    theme(legend.position = c(0.5, 0.8),
+          legend.background = element_rect(fill = "transparent"), # Make legend background transparent
+          legend.title = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.title.x = element_text(size = 20),
+          axis.text = element_text(size = 15),
+          axis.title.y = element_text(size = 20),
+          legend.key.size = unit(1, "cm"),
+          legend.text = element_text(size = 12)
+    )
+  return(layer0)
+}
+
+# Get the conditional model predictions
+plot_mod2 = marginaleffects::plot_predictions(
+  mod2, condition = c("timepoint_months", "sex"),
+  draw = FALSE, re.form = NA) 
+
+# Plot the predictions
+plot_2 <- anshu_piecewise_raw_plot(df = plot_mod2)
+
+# Update plot elements as needed
+plot_2+theme(legend.position = c(0.475, 0.75))+
+  ggtitle("Estimated growth trajectories (and 95% confidence intervals) of mean VALUE scores by sex.\nRaw mean scores at each timepoint are also presented as points.")
+
+# Save plot to file as svg
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"main_trajectories.svg"),
+       path = here::here("output"),
+       height = 6, width = 12)

@@ -1,0 +1,152 @@
+library(conflicted)
+library(tidyverse)
+conflicts_prefer(dplyr::filter)
+library(patchwork)
+
+res = read_csv(here::here("data", "results_from_Stephanie", "margins_stata.csv"))
+
+steph_plot = function(df, fill_var) {
+  layer0 = df |>
+    ggplot(aes(x = months, y = estimate, ymin = ci_low, ymax = ci_high, fill = var)) +
+    geom_line() +
+    geom_ribbon(alpha = 0.6) +
+    theme_bw() +
+    theme(legend.position = c(0.8, 0.8)) +
+    labs(fill = fill_var, x = "Months")
+  layer1 = switch(unique(df$outcome),
+         PHQ2 = layer0 + labs(y = "Estimated mean depression score"),
+         GAD2 = layer0 + labs(y = "Estimated mean anxiety score"))
+  return(layer1)
+}
+
+scales::show_col(cbPalette)
+# Model by sex
+phq2_sex = res |>
+  filter(outcome == "PHQ2", model == 1) |>
+  steph_plot("Sex") +
+  scale_fill_manual(values = c("#E69F00", "#009E73"),
+                    guide = guide_legend(reverse = TRUE))
+gad2_sex = res |>
+  filter(outcome == "GAD2", model == 1) |>
+  steph_plot("Sex")  +
+  scale_fill_manual(values = c("#E69F00", "#009E73"),
+                    guide = guide_legend(reverse = TRUE)) +
+  theme(legend.position = "none")
+
+phq2_sex + gad2_sex
+
+# Model by age
+phq2_age = res |>
+  filter(outcome == "PHQ2", model == 2) |>
+  steph_plot(NULL)
+
+gad2_age = res |>
+  filter(outcome == "GAD2", model == 2) |>
+  steph_plot("Age group") +
+  theme(legend.position = "none")
+
+phq2_age + gad2_age
+
+# Model by COVID severity
+gad2_covids = res |>
+  filter(outcome == "GAD2", model == 3) |>
+  steph_plot(NULL)
+
+# Model by loneliness
+phq2_lonely = res |>
+  filter(outcome == "PHQ2", model == 4) |>
+  steph_plot("Loneliness") +
+  scale_fill_manual(values = c("#F0E442", "#CC79A7"))
+
+gad2_lonely = res |>
+  filter(outcome == "GAD2", model == 4) |>
+  steph_plot("Loneliness")+
+  scale_fill_manual(values = c("#F0E442", "#CC79A7")) +
+  theme(legend.position = "none")
+
+phq2_lonely + gad2_lonely
+
+## Join plots more
+phq2_sex + phq2_age + phq2_lonely + plot_layout(ncol = 2)
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"PHQ2_all.svg"),
+       path = here::here("output"),
+       height = 10, width = 10)
+
+gad2_sex + gad2_covids + gad2_age + gad2_lonely + plot_layout(ncol = 2)
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"GAD2_all.svg"),
+       path = here::here("output"),
+       height = 10, width = 10)
+
+phq2_sex + gad2_sex
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"bySex.svg"),
+       path = here::here("output"),
+       height = 4, width = 8)
+
+phq2_age + theme(legend.position = c(0.7, 0.82)) + gad2_age
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"byAge.svg"),
+       path = here::here("output"),
+       height = 4, width = 8)
+
+gad2_covids + theme(legend.position = c(0.6, 0.88))
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"byCOVIDseverity.svg"),
+       path = here::here("output"),
+       height = 4, width = 4)
+
+phq2_lonely + gad2_lonely
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"byLoneliness.svg"),
+       path = here::here("output"),
+       height = 4, width = 8)
+
+## Total sample for Figure 1
+# Results from Stephanie tidied into this file
+Fig1dat = read_csv(here::here("data", "results_from_Stephanie", "margins_stata_total_sample.csv"))
+
+Fig1 = Fig1dat |>
+  filter(outcome != "UCLA_original") |>
+  ggplot(aes(x = months, y = estimate, ymin = ci_low, ymax = ci_high, fill = outcome)) +
+  geom_line() +
+  geom_ribbon(alpha = 0.7) +
+  ylim(c(0, 2.001)) +
+  theme_bw() +
+  theme(legend.position = c(0.8, 0.8)) +
+  labs(fill = NULL, x = "Months", y = "Estimated mean scores") +
+  scale_fill_manual(values = c("#F0E442", "#CC79A7", "#56B4E9"), guide = "none")
+Fig1
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"total_sample.svg"),
+       path = here::here("output"),
+       height = 4, width = 6)
+
+# raw means data from Stephanie (copied from file data/results_from_Stephanie/raw_means.xlsx)
+# sent to me on 2023-11-09 11:27
+raw_means_Steph = tibble::tribble(
+  ~months,  ~mean_PHQ2,  ~mean_GAD2,    ~mean_UCLA, ~se_PHQ2, ~se_GAD2,  ~se_UCLA, ~cilow_PHQ2, ~cihigh_PHQ2, ~cilow_GAD2, ~cihigh_GAD2, ~cilow_UCLA, ~cihigh_UCLA,
+       0L,     1.03912,     1.25018,      1.872689, 0.017745, 0.019102, 0.0227358,  1.004339,  1.073897,  1.212738,  1.287618, 1.828126,  1.917251,
+       1L,      0.9654,     1.16508,      1.638625, 0.019403,  0.02077, 0.0255384, 0.9273711,  1.003429,  1.124375,  1.205793,  1.58857,   1.68868,
+       2L,    0.936367,     1.19936,       1.62062, 0.018192, 0.019937, 0.0242013, 0.9007111, 0.9720235,  1.160279,  1.238433, 1.573186,  1.668055,
+       3L,    0.867422,     1.08825,      1.339098, 0.017294, 0.018947, 0.0227292, 0.8335257, 0.9013183,  1.051116,  1.125389, 1.294548,  1.383647,
+       4L,    0.768012,    0.923938,       0.75377,  0.01709, 0.018475, 0.0200485, 0.7345155, 0.8015081, 0.8877271, 0.9601496, 0.714475,  0.793065,
+      13L,    0.719774,      1.1744,     0.6146594, 0.017334, 0.020674, 0.0183354, 0.6857999, 0.7537476,  1.133884,  1.214926, 0.578722, 0.6505969,
+      25L,    0.825138,     1.18066,     0.5337017, 0.020881, 0.023079, 0.0185024, 0.7842107, 0.8660654,  1.135429,  1.225897, 0.497437, 0.5699663
+  )
+raw_means_Steph.l = raw_means_Steph |>
+  pivot_longer(-months,
+               names_to = c(".value", "outcome"),
+               names_sep = '_')
+rawPlot = raw_means_Steph.l |>
+  ggplot() +
+  geom_errorbar(aes(x = months, y = mean, ymin = cilow, ymax = cihigh, colour = outcome)) +
+  geom_point(aes(x = months, y = mean, ymin = cilow., ymax = cihigh, colour = outcome)) +
+  scale_colour_manual(values = c("#F0E442", "#CC79A7", "#56B4E9"))
+
+Fig1 +
+  geom_errorbar(data = raw_means_Steph.l,
+                aes(x = months, y = mean, ymin = cilow, ymax = cihigh, colour = outcome),
+                width = 0.4) +
+  geom_point(data = raw_means_Steph.l,
+             aes(x = months, y = mean, ymin = cilow, ymax = cihigh, colour = outcome),
+             size = 1) +
+  scale_colour_manual(values = c("#c0b635", "#a36186", "#4590ba")) +
+  labs(colour = NULL,  y = "Mean scores")
+ggsave(file = paste0(format(Sys.time(), "%Y-%m-%d-%H%M_"),"total_sample_with_raw_means.svg"),
+       path = here::here("output"),
+       height = 4, width = 6)
