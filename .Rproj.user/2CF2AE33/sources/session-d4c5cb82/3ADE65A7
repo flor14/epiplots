@@ -1,0 +1,32 @@
+{
+    "id": "3ADE65A7",
+    "path": "~/epiplot/slides.qmd",
+    "project_path": "slides.qmd",
+    "type": "quarto_markdown",
+    "hash": "1317472324",
+    "contents": "",
+    "dirty": false,
+    "created": 1729635341528.0,
+    "source_on_save": true,
+    "relative_order": 3,
+    "properties": {
+        "rmdVisualMode": "false",
+        "rmdVisualWrapConfigured": "true",
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "3,1",
+        "scrollLine": "0",
+        "docOutlineVisible": "1",
+        "rmdVisualCollapsedChunks": "",
+        "rmdVisualModeLocation": "38:0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1729636553,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1729636553173,
+    "read_only": false,
+    "read_only_alternatives": []
+}

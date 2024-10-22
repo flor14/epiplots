@@ -15,7 +15,7 @@ gaidspeedwithage <- read.xlsx("data/data_21_10_2024.xlsx", sheetIndex = 2)
 ```
 
 
-## gaidspeedovertime
+## gaitspeedovertime
 
 ```{r}
 
