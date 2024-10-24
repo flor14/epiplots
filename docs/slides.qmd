@@ -81,15 +81,16 @@ plot90 <- function(data, xaxis, level_labels, labx, laby){
 
 
 ```{r, echo=FALSE}
-gaitspeedovertime <- read.xlsx("data/data_21_10_2024.xlsx", sheetIndex = 1)
-gaitspeedwithage <- read.xlsx("data/data_21_10_2024.xlsx", sheetIndex = 2)
+gaitspeedovertime <- read.xlsx(here::here("data","data_21_10_2024.xlsx"), sheetIndex = 1)
+gaitspeedwithage <- read.xlsx(here::here("data","data_21_10_2024.xlsx"), sheetIndex = 2)
 
-gaitspeedage2 <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 1)
-fvcwithage <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 2)
-gripwithage <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 3)
-chairrisewithage <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 4)
-selfratedhearing <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 5)
-selfratedeyesight <- read.xlsx("data/data_22_10_2024.xlsx", sheetIndex = 6)
+gaitspeedage2 <- read.xlsx(here::here("data","data_22_10_2024.xlsx"), sheetIndex = 1)
+fvcwithage <- read.xlsx(here::here("data","data_22_10_2024.xlsx"), sheetIndex = 2)
+gripwithage <- read.xlsx(here::here("data","data_22_10_2024.xlsx"), sheetIndex = 3)
+chairrisewithage <- read.xlsx(here::here("data","data_22_10_2024.xlsx"), sheetIndex = 4)
+selfratedhearing <- read.xlsx(here::here("data","data_22_10_2024.xlsx"), sheetIndex = 5)
+selfratedeyesight <- read.xlsx(here::here("data","data_22_10_2024.xlsx"), sheetIndex = 6)
+
 ```
 
 
@@ -170,14 +171,14 @@ p3 = plot(data = gaitspeedage2,
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Gait speed, m/s") +
+     laby = "Gait speed (m/s)") +
   theme(legend.position = "none")
 
 p4 = plot90(data = gaitspeedage2, 
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Gait speed, m/s")
+     laby = "Gait speed (m/s)")
 
 p3 + p4
 ```
@@ -256,14 +257,14 @@ p11 = plot(data = selfratedhearing,
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Self-Rated hearing") +
+     laby = "Self-rated Hearing Loss") +
   theme(legend.position = "none")
 
 p12 = plot90(data = selfratedhearing, 
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Self-Rated hearing")
+     laby = "Self-rated Hearing Loss")
   
 p11 + p12
 ```
@@ -278,14 +279,38 @@ p13 = plot(data = selfratedeyesight,
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Self-Rated eyesight") +
-  theme(legend.position = "none")
+     laby = "Self-Rated Visual Impairment") 
+#+
+ # theme(legend.position = "none")
 
 p14 = plot90(data = selfratedeyesight, 
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Self-Rated eyesight")
+     laby = "Self-Rated Visual Impairment")
   
 p13 + p14
 ```
+
+---
+
+```{r}
+
+a = p3 + labs(tag = "A") 
+
+b = p5 + labs(tag = "B") 
+
+c = p7 + labs(tag = "C") 
+
+d = p9 + labs(tag = "D") 
+
+e = p11 + labs(tag = "E") 
+
+f = p13 + labs(tag = "F") 
+
+a + b + c + d + e + f +
+  plot_layout(ncol = 3)
+
+
+```
+
