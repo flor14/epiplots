@@ -1,5 +1,6 @@
 ---
-title: "Plots 📈"
+title: "ELSA Plots 📈"
+date: "2024-10-25"
 format: revealjs
 ---
 
@@ -214,14 +215,14 @@ p7 = plot(data = gripwithage,
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Grip Strength")  +
+     laby = "Grip Strength (kg)")  +
   theme(legend.position = "none")
 
 p8 = plot90(data = gripwithage, 
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Grip Strength")
+     laby = "Grip Strength (kg)")
 
 p7 + p8
 ```
@@ -235,14 +236,14 @@ p9 = plot(data = chairrisewithage,
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Log Time to complete 5 chair rises (seconds)") +
+     laby = "5 chair rises (log time in seconds)") +
   theme(legend.position = "none")
 
 p10 = plot90(data = chairrisewithage, 
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Log Time to complete 5 chair rises (seconds)")
+     laby = "5 chair rises (log time in seconds)")
 
 p9 + p10
 ```
