@@ -214,14 +214,14 @@ p7 = plot(data = gripwithage,
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Grip with Age")  +
+     laby = "Grip Strength")  +
   theme(legend.position = "none")
 
 p8 = plot90(data = gripwithage, 
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Grip with Age")
+     laby = "Grip Strength")
 
 p7 + p8
 ```
@@ -235,14 +235,14 @@ p9 = plot(data = chairrisewithage,
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Chair rise with age") +
+     laby = "Log Time to complete 5 chair rises (seconds)") +
   theme(legend.position = "none")
 
 p10 = plot90(data = chairrisewithage, 
      xaxis = Age,
      level_labels = level_labels,
      labx = "Age",
-     laby = "Chair rise with age")
+     laby = "Log Time to complete 5 chair rises (seconds)")
 
 p9 + p10
 ```
