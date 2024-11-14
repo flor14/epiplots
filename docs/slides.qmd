@@ -29,7 +29,7 @@ plot <- function(data, xaxis, level_labels, labx, laby){
     Wealth.quintile,
     levels =
       level_labels
-  )) %>%
+  )) |>
   ggplot(aes(x = {{xaxis}},
           )) +
       geom_line(aes(color = Wealth.quintile, 
@@ -57,7 +57,7 @@ plot90 <- function(data, xaxis, level_labels, labx, laby){
     Wealth.quintile,
     levels =
       level_labels
-  )) %>%
+  ))  |> 
   ggplot(aes(x = {{xaxis}},
           )) +
       geom_line(aes(color = Wealth.quintile, 
@@ -109,7 +109,7 @@ p1 = gaitspeedovertime |>
         "lower wealth quintile",
         "lowest wealth quintile"
       )
-  )) %>%
+  ))  |> 
   ggplot(aes(x = Years)) +
     geom_line(aes(color = Wealth.quintile, 
              y = X_margin), linewidth = 0.5) +
@@ -140,7 +140,7 @@ p2 = gaitspeedwithage |>
         "lower wealth quintile",
         "lowest wealth quintile"
       )
-  )) %>%
+  ))  |> 
   ggplot(aes(x = Age,
           )) +
       geom_line(aes(color = Wealth.quintile, 
